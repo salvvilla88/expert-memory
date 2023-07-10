@@ -1,11 +1,5 @@
 import streamlit as st
 from langchain.llms import OpenAI
-import os
-from dotenv import load_dotenv
-
-load_dotenv(dotenv_path='env_vars.env')
-
-OPENAI_API_KEY = os.getenv('OPENAI')
 
 st.title('🦜🔗 Quickstart App')
 
