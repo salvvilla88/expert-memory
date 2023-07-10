@@ -2,7 +2,7 @@ import streamlit as st
 
 from langchain import PromptTemplate
 from langchain.llms import OpenAI
-from langchain.agents import load_tools, initialize_agent
+from langchain.agents import load_tools, initialize_agent, AgentType
 
 st.title('🧙 Question Wiz')
 
@@ -11,8 +11,8 @@ tool_names = ['serpapi']
 
 def generate_response(input_text):
   llm = OpenAI(temperature=0, model_name='gpt-3.5-turbo',openai_api_key=openai_api_key)
-  tools = load_tools(tool_names,llm)
-  agent = initialize_agent(tools, llm, agent="zero-shot-react-description")
+  tools = load_tools(tool_names,llm=llm)
+  agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION)
   st.info(agent.run(input_text))
   
 
