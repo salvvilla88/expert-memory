@@ -30,7 +30,7 @@ def generate_response(input_text):
   memory = ConversationBufferMemory(memory_key="chat_history")
   # agent = initialize_agent(tools, llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION)
 
-  llm_chain = LLMChain(llm=OpenAI(temperature=0), prompt=prompt)
+  llm_chain = LLMChain(llm=llm, prompt=prompt)
   agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools, verbose=True)
   agent_chain = AgentExecutor.from_agent_and_tools(
       agent=agent, tools=tools, verbose=True, memory=memory
