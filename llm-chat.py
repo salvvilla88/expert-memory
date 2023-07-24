@@ -8,7 +8,7 @@ from langchain.memory import ConversationBufferMemory
 
 st.title('🧙 Question Wiz')
 
-openai_api_key = st.secrets["OPENAI"]
+openai_api_key = st.secrets['OPENAI']
 tool_names = ['serpapi']
 
 def generate_response(input_text):
