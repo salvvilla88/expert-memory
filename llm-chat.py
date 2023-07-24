@@ -2,7 +2,7 @@ import streamlit as st
 
 from langchain import PromptTemplate, LLMChain
 from langchain.agents import load_tools, initialize_agent, AgentType, ZeroShotAgent, AgentExecutor
-from langchain.llms import OpenAI
+from langchain.llms import OpenAIChat
 from langchain.memory import ConversationBufferMemory
 
 
@@ -12,7 +12,7 @@ openai_api_key = st.secrets['OPENAI']
 tool_names = ['serpapi']
 
 def generate_response(input_text):
-  llm = OpenAI(temperature=0, model_name='gpt-3.5-turbo',openai_api_key=openai_api_key)
+  llm = OpenAIChat(temperature=0, model_name='gpt-3.5-turbo',openai_api_key=openai_api_key)
   tools = load_tools(tool_names,llm=llm)
   prefix = """Have a conversation with a human, answering the following questions as best you can. You have access to the following tools:"""
   suffix = """Begin!"
