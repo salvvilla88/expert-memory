@@ -42,14 +42,13 @@ if prompt := st.chat_input(placeholder="What would you like to know?"):
 
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", openai_api_key=openai_api_key, streaming=True)
     tools = [DuckDuckGoSearchRun(name="Search")]
-    chat_agent = ConversationalChatAgent.from_llm_and_tools(llm=llm, tools=tools)
+    chat_agent = ConversationalChatAgent.from_llm_and_tools(llm=llm, tools=tools, verbose=True)
     executor = AgentExecutor.from_agent_and_tools(
         agent=chat_agent,
         tools=tools,
         memory=memory,
         return_intermediate_steps=True,
         handle_parsing_errors=True,
-        verbose=True
     )
     with st.chat_message("assistant"):
         st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
