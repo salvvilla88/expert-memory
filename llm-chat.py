@@ -49,7 +49,7 @@ def generate_response(input_text):
 
   llm_chain = LLMChain(llm=llm, prompt=prompt)
   tool_names = [tool.name for tool in tools]
-  agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools, tools=tools, verbose=True)
+  agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools, verbose=True)
   agent_chain  = AgentExecutor.from_agent_and_tools(
     agent=agent, tools=tools, verbose=True, memory=memory
   )
