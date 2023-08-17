@@ -1,15 +1,18 @@
 import streamlit as st
 
-from langchain.agents import ConversationalChatAgent, AgentExecutor
+from langchain.agents import ConversationalChatAgent, AgentExecutor, load_tools
 from langchain.callbacks import StreamlitCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
-from langchain.tools import GoogleSerperRun
+from langchain.utilities import SerpAPIWrapper
+
+search = SerpAPIWrapper()
 
 st.title('🧙 Question Wiz')
 
 openai_api_key = st.secrets['OPENAI']
+serpapi_api_key = st.secrets['SERPAPI_API_KEY']
 
 msgs = StreamlitChatMessageHistory()
 memory = ConversationBufferMemory(
@@ -41,7 +44,7 @@ if prompt := st.chat_input(placeholder="What would you like to know?"):
         st.stop()
 
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", openai_api_key=openai_api_key, streaming=True)
-    tools = [GoogleSerperRun(name="Search")]
+    tools = load_tools['serapi']
     chat_agent = ConversationalChatAgent.from_llm_and_tools(llm=llm, tools=tools, verbose=True)
     executor = AgentExecutor.from_agent_and_tools(
         agent=chat_agent,
