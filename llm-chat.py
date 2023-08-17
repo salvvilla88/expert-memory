@@ -5,7 +5,7 @@ from langchain.callbacks import StreamlitCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
-from langchain.tools import GoogleSerperRun
+from langchain.tools import DuckDuckGoSearchRun
 
 st.title('🧙 Question Wiz')
 
@@ -41,7 +41,7 @@ if prompt := st.chat_input(placeholder="What would you like to know?"):
         st.stop()
 
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", openai_api_key=openai_api_key, streaming=True)
-    tools = [GoogleSerperRun(name="Search")]
+    tools = [DuckDuckGoSearchRun(name="Search")]
     chat_agent = ConversationalChatAgent.from_llm_and_tools(llm=llm, tools=tools, verbose=True)
     executor = AgentExecutor.from_agent_and_tools(
         agent=chat_agent,
