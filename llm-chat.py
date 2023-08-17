@@ -1,54 +1,58 @@
 import streamlit as st
 
-from langchain import LLMChain
-from langchain.agents import ZeroShotAgent, AgentExecutor, initialize_agent, Tool 
-from langchain.llms import OpenAIChat
+from langchain.agents import ConversationalChatAgent, AgentExecutor
+from langchain.callbacks import StreamlitCallbackHandler
+from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
-from langchain.utilities import SerpAPIWrapper
+from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
+from langchain.tools import GoogleSearchRun
 
 st.title('🧙 Question Wiz')
 
 openai_api_key = st.secrets['OPENAI']
 
-def generate_response(input_text):
-  search = SerpAPIWrapper()
-  tools = [
-      Tool(
-          name = "Search",
-          func=search.run,
-          description="useful for when you need to answer questions about current events or the current state of the world"
-      ),
-  ]
+msgs = StreamlitChatMessageHistory()
+memory = ConversationBufferMemory(
+    chat_memory=msgs, return_messages=True, memory_key="chat_history", output_key="output"
+)
 
-  prefix = """Have a conversation with a human, answering the following questions as best you can. You have access to the following tools:"""
-  suffix = """Begin!"
+if len(msgs.messages) == 0 or st.sidebar.button("Reset chat history"):
+    msgs.clear()
+    msgs.add_ai_message("How can I help you?")
+    st.session_state.steps = {}
 
-  {chat_history}
-  Question: {input}
-  {agent_scratchpad}"""
+avatars = {"human": "user", "ai": "assistant"}
+for idx, msg in enumerate(msgs.messages):
+    with st.chat_message(avatars[msg.type]):
+        # Render intermediate steps if any were saved
+        for step in st.session_state.steps.get(str(idx), []):
+            if step[0].tool == "_Exception":
+                continue
+            with st.expander(f"✅ **{step[0].tool}**: {step[0].tool_input}"):
+                st.write(step[0].log)
+                st.write(f"**{step[1]}**")
+        st.write(msg.content)
+        
+if prompt := st.chat_input(placeholder="What would you like to know?"):
+    st.chat_message("user").write(prompt)
 
-  prompt = ZeroShotAgent.create_prompt(
-      tools,
-      prefix=prefix,
-      suffix=suffix,
-      input_variables=["input", "chat_history", "agent_scratchpad"]
-  )
-  
-  memory = ConversationBufferMemory(memory_key='chat_history')
-  llm = OpenAIChat(temperature=0, model_name='gpt-3.5-turbo',openai_api_key=openai_api_key)
+    if not openai_api_key:
+        st.info("Please add your OpenAI API key to continue.")
+        st.stop()
 
-  llm_chain = LLMChain(llm=llm, prompt=prompt)
-  agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools, verbose=True)
-  agent_chain  = AgentExecutor.from_agent_and_tools(
-    agent=agent, tools=tools, verbose=True, memory=memory
-  )
-  st.info(agent_chain.run(input_text))
-  
-
-with st.form('my_form'):
-  text = st.text_area('Prompt:', 'Write your question here')
-  submitted = st.form_submit_button('Submit')
-  if not openai_api_key.startswith('sk-'):
-    st.warning('Please enter your OpenAI API key!', icon='⚠')
-  if submitted and openai_api_key.startswith('sk-'):
-    generate_response(text)
+    llm = ChatOpenAI(model_name="gpt-3.5-turbo", openai_api_key=openai_api_key, streaming=True)
+    tools = [GoogleSearchRun(name="Search")]
+    chat_agent = ConversationalChatAgent.from_llm_and_tools(llm=llm, tools=tools, verbose=True)
+    executor = AgentExecutor.from_agent_and_tools(
+        agent=chat_agent,
+        tools=tools,
+        memory=memory,
+        return_intermediate_steps=True,
+        handle_parsing_errors=True,
+        verbose=True
+    )
+    with st.chat_message("assistant"):
+        st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
+        response = executor(prompt, callbacks=[st_cb])
+        st.write(response["output"])
+        st.session_state.steps[str(len(msgs.messages) - 1)] = response["intermediate_steps"]
