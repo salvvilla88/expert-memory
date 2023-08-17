@@ -44,12 +44,12 @@ def generate_response(input_text):
       tools,
       prefix=prefix,
       suffix=suffix,
-      input_variables=["input", "chat_history", "agent_scratchpad"],
+      input_variables=["input", "chat_history", "agent_scratchpad"]
   )
 
   llm_chain = LLMChain(llm=llm, prompt=prompt)
   tool_names = [tool.name for tool in tools]
-  agent = ZeroShotAgent(llm_chain=llm_chain, allowed_tools=tool_names, tools=tools, verbose=True)
+  agent = ZeroShotAgent(llm_chain=llm_chain, tools=tools, tools=tools, verbose=True)
   agent_chain  = AgentExecutor.from_agent_and_tools(
     agent=agent, tools=tools, verbose=True, memory=memory
   )
