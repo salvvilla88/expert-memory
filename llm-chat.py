@@ -73,5 +73,6 @@ if prompt := st.chat_input(placeholder="What would you like to know?"):
     with st.chat_message("assistant"):
         st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
         response = executor(prompt, callbacks=[st_cb])
+        print(msg.content)
         st.write(response["output"])
         st.session_state.steps[str(len(msgs.messages) - 1)] = response["intermediate_steps"]
