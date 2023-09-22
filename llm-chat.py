@@ -25,6 +25,7 @@ if len(msgs.messages) == 0 or st.sidebar.button("Reset chat history"):
     st.session_state.steps = {}
 
 avatars = {"human": "user", "ai": "assistant"}
+# Inside the loop that displays messages in the chat history
 for idx, msg in enumerate(msgs.messages):
     with st.chat_message(avatars[msg.type]):
         # Render intermediate steps if any were saved
@@ -57,5 +58,6 @@ if prompt := st.chat_input(placeholder="What would you like to know?"):
     with st.chat_message("assistant"):
         st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
         response = executor(prompt, callbacks=[st_cb])
+        print(response)
         st.write(response["output"])
         st.session_state.steps[str(len(msgs.messages) - 1)] = response["intermediate_steps"]
