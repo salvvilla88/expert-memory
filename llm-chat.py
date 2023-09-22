@@ -9,7 +9,7 @@ from langchain.utilities import SerpAPIWrapper
 
 search = SerpAPIWrapper()
 
-st.title('🧙 Question Wiz')
+st.title('🔮 Eight Wiz')
 
 openai_api_key = st.secrets['OPENAI']
 serpapi_api_key = st.secrets['SERPAPI_API_KEY']
