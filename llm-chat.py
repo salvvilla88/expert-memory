@@ -38,7 +38,6 @@ for idx, msg in enumerate(msgs.messages):
     with st.chat_message(avatars[msg.type]):
         # Render intermediate steps if any were saved
         for step in st.session_state.steps.get(str(idx), []):
-            print(step)
             if step[0].tool == "_Exception":
                 continue
             with st.expander(f"✅ **{step[0].tool}**: {step[0].tool_input}"):
@@ -72,8 +71,8 @@ if prompt := st.chat_input(placeholder="What would you like to know?"):
 
     # Display the assistant's response
     with st.chat_message("assistant"):
+        print('HUUUUUUUUUUUUUUUUUUUUUH')
         st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
         response = executor(prompt, callbacks=[st_cb])
-        print(msg.content)
         st.write(response["output"])
         st.session_state.steps[str(len(msgs.messages) - 1)] = response["intermediate_steps"]
