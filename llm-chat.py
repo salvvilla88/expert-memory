@@ -38,6 +38,7 @@ for idx, msg in enumerate(msgs.messages):
     with st.chat_message(avatars[msg.type]):
         # Render intermediate steps if any were saved
         for step in st.session_state.steps.get(str(idx), []):
+            print(step)
             if step[0].tool == "_Exception":
                 continue
             with st.expander(f"✅ **{step[0].tool}**: {step[0].tool_input}"):
