@@ -1,5 +1,6 @@
-import streamlit as st
+import streamlit as st  # Importing Streamlit library
 
+# Importing required modules from langchain package
 from langchain.agents import ConversationalChatAgent, AgentExecutor, load_tools
 from langchain.callbacks import StreamlitCallbackHandler
 from langchain.chat_models import ChatOpenAI
@@ -7,25 +8,32 @@ from langchain.memory import ConversationBufferMemory
 from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
 from langchain.utilities import SerpAPIWrapper
 
+# Creating an instance of SerpAPIWrapper
 search = SerpAPIWrapper()
 
+# Setting the title for the Streamlit app
 st.title('🔮 Eight Wizs')
 
+# Retrieving API keys from Streamlit secrets
 openai_api_key = st.secrets['OPENAI']
 serpapi_api_key = st.secrets['SERPAPI_API_KEY']
 
+# Initializing chat message history and memory
 msgs = StreamlitChatMessageHistory()
 memory = ConversationBufferMemory(
     chat_memory=msgs, return_messages=True, memory_key="chat_history", output_key="output"
 )
 
+# Handling chat history reset if button is clicked
 if len(msgs.messages) == 0 or st.sidebar.button("Reset chat history"):
     msgs.clear()
     msgs.add_ai_message("How can I help you?")
     st.session_state.steps = {}
 
+# Avatar mapping for messages
 avatars = {"human": "user", "ai": "assistant"}
-# Inside the loop that displays messages in the chat history
+
+# Loop through the chat messages and display them with relevant formatting
 for idx, msg in enumerate(msgs.messages):
     with st.chat_message(avatars[msg.type]):
         # Render intermediate steps if any were saved
@@ -36,17 +44,22 @@ for idx, msg in enumerate(msgs.messages):
                 st.write(step[0].log)
                 st.write(f"**{step[1]}**")
         st.write(msg.content)
-        
+
+# Accept user input through a chat input box
 if prompt := st.chat_input(placeholder="What would you like to know?"):
     st.chat_message("user").write(prompt)
 
+    # Check if OpenAI API key is provided
     if not openai_api_key:
         st.info("Please add your OpenAI API key to continue.")
         st.stop()
 
+    # Initialize the ChatOpenAI model and tools for the chat agent
     llm = ChatOpenAI(model_name="gpt-3.5-turbo", openai_api_key=openai_api_key, streaming=True)
     tools = load_tools(['serpapi'])
     chat_agent = ConversationalChatAgent.from_llm_and_tools(llm=llm, tools=tools, verbose=True)
+
+    # Initialize an executor to process the user's input and generate a response
     executor = AgentExecutor.from_agent_and_tools(
         agent=chat_agent,
         tools=tools,
@@ -55,19 +68,16 @@ if prompt := st.chat_input(placeholder="What would you like to know?"):
         handle_parsing_errors=True,
         verbose=True
     )
+
+    # Display the assistant's response
     with st.chat_message("assistant"):
         st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
         response = executor(prompt, callbacks=[st_cb])
-        print(response)
-        # Display assistant's response with a code block if applicable
         if msg.type == "ai":
             if response.get("has_code", False):
                 st.write("Here's some code that might help:")
                 st.code(response["code"], language="python")
-            elif response.get("has_other_format", False):
-                # Add more conditions for other relevant formats if needed
-                st.write("Here's some relevant information:")
-                st.write(response["other_format_content"])
+            # ... (other relevant formats)
             else:
                 st.write(msg.content)
         else:
