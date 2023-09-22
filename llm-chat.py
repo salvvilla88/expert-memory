@@ -59,5 +59,17 @@ if prompt := st.chat_input(placeholder="What would you like to know?"):
         st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
         response = executor(prompt, callbacks=[st_cb])
         print(response)
-        st.write(response["output"])
+        # Display assistant's response with a code block if applicable
+        if msg.type == "ai":
+            if response.get("has_code", False):
+                st.write("Here's some code that might help:")
+                st.code(response["code"], language="python")
+            elif response.get("has_other_format", False):
+                # Add more conditions for other relevant formats if needed
+                st.write("Here's some relevant information:")
+                st.write(response["other_format_content"])
+            else:
+                st.write(msg.content)
+        else:
+            st.write(msg.content)
         st.session_state.steps[str(len(msgs.messages) - 1)] = response["intermediate_steps"]
