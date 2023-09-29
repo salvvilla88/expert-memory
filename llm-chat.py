@@ -1,4 +1,5 @@
 import streamlit as st  # Importing Streamlit library
+import os
 
 # Importing required modules from langchain package
 from langchain.agents import ConversationalChatAgent, AgentExecutor, load_tools
@@ -7,6 +8,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
 from langchain.utilities import SerpAPIWrapper
+from template.template import CustomPromptTemplate
 
 # Creating an instance of SerpAPIWrapper
 search = SerpAPIWrapper()
@@ -40,9 +42,9 @@ for idx, msg in enumerate(msgs.messages):
         for step in st.session_state.steps.get(str(idx), []):
             if step[0].tool == "_Exception":
                 continue
-            with st.expander(f"✅ **{step[0].tool}**: {step[0].tool_input}"):
+            with st.status(f"**{step[0].tool}**: {step[0].tool_input}", state="complete"):
                 st.write(step[0].log)
-                st.write(f"**{step[1]}**")
+                st.write(step[1])
         st.write(msg.content)
 
 # Accept user input through a chat input box
@@ -66,13 +68,14 @@ if prompt := st.chat_input(placeholder="What would you like to know?"):
         memory=memory,
         return_intermediate_steps=True,
         handle_parsing_errors=True,
-        verbose=True
+        verbose=True,
     )
+    
 
     # Display the assistant's response
     with st.chat_message("assistant"):
-        print('HUUUUUUUUUUUUUUUUUUUUUH')
         st_cb = StreamlitCallbackHandler(st.container(), expand_new_thoughts=False)
         response = executor(prompt, callbacks=[st_cb])
+        print(f"**************************{response}****************************\n\n")
         st.write(response["output"])
         st.session_state.steps[str(len(msgs.messages) - 1)] = response["intermediate_steps"]
