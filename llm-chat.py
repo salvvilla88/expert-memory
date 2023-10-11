@@ -57,7 +57,7 @@ if prompt := st.chat_input(placeholder="What would you like to know?"):
         st.stop()
 
     # Initialize the ChatOpenAI model and tools for the chat agent
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo", openai_api_key=openai_api_key, streaming=True)
+    llm = ChatOpenAI(model_name="gpt-4", openai_api_key=openai_api_key, streaming=True)
     tools = load_tools(['serpapi'])
     chat_agent = ConversationalChatAgent.from_llm_and_tools(llm=llm, tools=tools, verbose=True)
 
